@@ -1,0 +1,17 @@
+[package]
+name = "swelearn"
+version = "0.1.0"
+edition = "2021"
+description = "A terminal-based learning tool for software engineering interview prep"
+license = "MIT"
+repository = "https://github.com/httpNick/swelearn"
+keywords = ["cli", "tui", "learning", "system-design", "interview"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+ratatui = "0.30"
+crossterm = "0.29"
+color-eyre = "0.6"
+
+[build-dependencies]
+# placeholder for mermaid pre-rendering later
