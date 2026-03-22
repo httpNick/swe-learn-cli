@@ -1,0 +1,123 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            use_cross: false
+            strip: strip
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            use_cross: true
+            strip: aarch64-linux-gnu-strip
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            use_cross: false
+            strip: strip
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            use_cross: false
+            strip: strip
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            use_cross: false
+            strip: ""
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross
+        if: matrix.use_cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build binary (cross)
+        if: matrix.use_cross
+        run: cross build --release --target ${{ matrix.target }}
+
+      - name: Build binary (cargo)
+        if: "!matrix.use_cross"
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Install cross-strip (aarch64 Linux)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: sudo apt-get install -y binutils-aarch64-linux-gnu
+
+      - name: Strip binary (Linux / macOS)
+        if: matrix.os != 'windows-latest'
+        run: ${{ matrix.strip }} target/${{ matrix.target }}/release/swelearn
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "VERSION=dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Package artifact (Linux / macOS)
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          ARTIFACT_NAME="swelearn-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}"
+          cp target/${{ matrix.target }}/release/swelearn "${ARTIFACT_NAME}"
+          echo "ARTIFACT=${ARTIFACT_NAME}" >> "$GITHUB_ENV"
+
+      - name: Package artifact (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          ARTIFACT_NAME="swelearn-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}.exe"
+          cp target/${{ matrix.target }}/release/swelearn.exe "${ARTIFACT_NAME}"
+          echo "ARTIFACT=${ARTIFACT_NAME}" >> "$GITHUB_ENV"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: swelearn-${{ steps.version.outputs.VERSION }}-${{ matrix.target }}
+          path: ${{ env.ARTIFACT }}
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "artifacts/*"
+          generateReleaseNotes: true
+          token: ${{ secrets.GITHUB_TOKEN }}

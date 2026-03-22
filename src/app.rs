@@ -1,11 +1,11 @@
 use std::io::Stdout;
 
 use color_eyre::Result;
-use ratatui::{Terminal, backend::CrosstermBackend};
+use ratatui::{backend::CrosstermBackend, Terminal};
 
 use crate::{
     content::topics_for_module,
-    events::{Action, next_action},
+    events::{next_action, Action},
     modules::all_modules,
     ui,
 };

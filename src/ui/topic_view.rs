@@ -1,17 +1,14 @@
 use ratatui::{
-    Frame,
     layout::{Constraint, Layout},
     widgets::{Block, Borders, Paragraph, Wrap},
+    Frame,
 };
 
 use crate::{app::App, content::topics_for_module, modules::all_modules};
 
 pub fn draw(frame: &mut Frame, app: &App) {
-    let [content_area, footer_area] = Layout::vertical([
-        Constraint::Min(0),
-        Constraint::Length(1),
-    ])
-    .areas(frame.area());
+    let [content_area, footer_area] =
+        Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).areas(frame.area());
 
     let module = &all_modules()[app.active_module];
     let topic = &topics_for_module(app.active_module)[app.active_topic];
@@ -29,8 +26,6 @@ pub fn draw(frame: &mut Frame, app: &App) {
 
     frame.render_widget(content, content_area);
 
-    let footer = Paragraph::new(
-        "  [↑↓/jk] Scroll   [Esc/b] Back   [q] Quit",
-    );
+    let footer = Paragraph::new("  [↑↓/jk] Scroll   [Esc/b] Back   [q] Quit");
     frame.render_widget(footer, footer_area);
 }

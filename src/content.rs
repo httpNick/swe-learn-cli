@@ -49,7 +49,7 @@ fn build_topics(dir: &'static Dir<'static>) -> Vec<Topic> {
     files.sort_by_key(|f| f.path());
     files
         .into_iter()
-        .filter(|f| f.path().extension().map_or(false, |e| e == "md"))
+        .filter(|f| f.path().extension().is_some_and(|e| e == "md"))
         .filter_map(|f| f.contents_utf8())
         .map(|content| Topic {
             title: parse_title(content),

@@ -3,9 +3,7 @@ use ratatui::{
     text::{Line, Span, Text},
 };
 
-const HEADING_STYLE: Style = Style::new()
-    .fg(Color::Cyan)
-    .add_modifier(Modifier::BOLD);
+const HEADING_STYLE: Style = Style::new().fg(Color::Cyan).add_modifier(Modifier::BOLD);
 
 const CODE_STYLE: Style = Style::new().fg(Color::Yellow);
 
@@ -89,7 +87,13 @@ fn parse_inline(text: &str) -> Line<'static> {
             }
             (Some(b), None) => ('b', b),
             (None, Some(c)) => ('c', c),
-            (Some(b), Some(c)) => if c < b { ('c', c) } else { ('b', b) },
+            (Some(b), Some(c)) => {
+                if c < b {
+                    ('c', c)
+                } else {
+                    ('b', b)
+                }
+            }
         };
 
         match next {
@@ -164,7 +168,11 @@ mod tests {
     #[test]
     fn inline_bold() {
         let out = render("Use **bold** here");
-        let contents: Vec<_> = out.lines[0].spans.iter().map(|s| s.content.as_ref()).collect();
+        let contents: Vec<_> = out.lines[0]
+            .spans
+            .iter()
+            .map(|s| s.content.as_ref())
+            .collect();
         assert_eq!(contents, vec!["Use ", "bold", " here"]);
         assert_eq!(out.lines[0].spans[1].style, BOLD_STYLE);
     }
@@ -172,7 +180,11 @@ mod tests {
     #[test]
     fn inline_code() {
         let out = render("Use `cargo build` here");
-        let contents: Vec<_> = out.lines[0].spans.iter().map(|s| s.content.as_ref()).collect();
+        let contents: Vec<_> = out.lines[0]
+            .spans
+            .iter()
+            .map(|s| s.content.as_ref())
+            .collect();
         assert_eq!(contents, vec!["Use ", "cargo build", " here"]);
         assert_eq!(out.lines[0].spans[1].style, CODE_INLINE_STYLE);
     }
