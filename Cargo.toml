@@ -12,6 +12,7 @@ categories = ["command-line-utilities"]
 ratatui = "0.30"
 crossterm = "0.29"
 color-eyre = "0.6"
+include_dir = "0.7"
 
 [build-dependencies]
 # placeholder for mermaid pre-rendering later

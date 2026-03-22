@@ -380,8 +380,8 @@ A local `~/.config/swelearn/progress.json` file tracks which topics and question
 ## 10. MVP Scope & Phasing
 
 ### Phase 1 — MVP (Target: 8 weeks)
-- [ ] TUI shell with module navigation
-- [ ] System Design Questions module (10 questions)
+- [x] TUI shell with module navigation
+- [x] System Design Questions module (10 questions) *(10/10 complete)*
 - [ ] Cloud Architecture module (core topics)
 - [ ] Databases module
 - [ ] Networking module
